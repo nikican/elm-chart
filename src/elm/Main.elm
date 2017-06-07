@@ -3,6 +3,7 @@ module Main exposing (..)
 import Html exposing (..)
 import Nash
 import Pie exposing (Item, Size)
+import Color exposing (..)
 
 
 type alias Flags =
@@ -78,7 +79,8 @@ pieSize =
 oneitem : Pie.Item
 oneitem =
     { name = "Technology"
-    , value = 45
+    , value = 40
+    , color = Color.blue
     }
 
 
@@ -86,12 +88,13 @@ twoitem : Pie.Item
 twoitem =
     { name = "Oil"
     , value = 60
+    , color = Color.red
     }
 
 
 view : Model -> Html Msg
 view model =
     div []
-        [ Pie.view pieSize [ oneitem ] PieClick
+        [ Pie.view pieSize [ oneitem, twoitem ] PieClick
         , Nash.plot staticSize model.values
         ]

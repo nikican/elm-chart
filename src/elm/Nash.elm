@@ -59,7 +59,7 @@ dataToPoints size data =
 
 stringifyPoints : List ( Int, Float ) -> String
 stringifyPoints =
-    List.map (stringfyPoint) >> String.join " "
+    List.map stringfyPoint >> String.join " "
 
 
 stringfyPoint : ( Int, Float ) -> String

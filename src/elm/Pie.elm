@@ -2,11 +2,14 @@ module Pie exposing (..)
 
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
+import String exposing (join)
+import Color exposing (..)
 
 
 type alias Item =
     { name : String
     , value : Float
+    , color : Color
     }
 
 
@@ -16,31 +19,14 @@ type alias Size =
     }
 
 
-size1 : Float -> Size
-size1 b =
-    { width = b, height = 30.0 }
-
-
-getCoordinatesForPercent : Float -> ( Float, Float )
-getCoordinatesForPercent percent =
-    let
-        x =
-            cos (2 * pi) * percent
-
-        y =
-            sin (2 * pi) * percent
-    in
-        ( x, y )
-
-
-calculateSliceData : Item -> Float -> String
-calculateSliceData item total =
+calculateSliceData : Item -> Svg msg
+calculateSliceData item =
     let
         cumulativeRadians =
             0
 
         percent =
-            item.value / total
+            item.value / 100
 
         startX =
             cos (cumulativeRadians)
@@ -48,39 +34,40 @@ calculateSliceData item total =
         startY =
             sin (cumulativeRadians)
 
-        cumulativeRadians =
+        cumulativeRadians2 =
             2 * pi * percent
 
         endX =
-            cos (cumulativeRadians)
+            cos (cumulativeRadians2)
 
         endY =
-            sin (cumulativeRadians)
+            sin (cumulativeRadians2)
+
+        largeArcFlag =
+            if percent > 0.5 then
+                1
+            else
+                0
+
+        pathD =
+            String.join " "
+                [ "M"
+                , toString startX
+                , toString startY
+                , "A 1 1 0"
+                , toString largeArcFlag
+                , "1"
+                , toString endX
+                , toString endY
+                , "L 0 0"
+                ]
     in
-        toString percent
+        Svg.path
+            [ d pathD
+            ]
 
 
 
---let cumulativeRadians = 0;
---
---      slices = scoreSummary.results.map((slice) => {
---        const percent = slice.count / total;
---
---        const startX = Math.cos(cumulativeRadians);
---        const startY = Math.sin(cumulativeRadians);
---
---        cumulativeRadians += 2 * Math.PI * percent;
---
---        const endX = Math.cos(cumulativeRadians);
---        const endY = Math.sin(cumulativeRadians);
---
---        const largeArcFlag = percent > 0.5 ? 1 : 0;
---
---        const d = [
---          `M ${startX} ${startY}`,
---          `A 1 1 0 ${largeArcFlag} 1 ${endX} ${endY}`,
---          `L 0 0`,
---        ].join(` `);
 --
 --        return path({
 --          d,
@@ -91,17 +78,15 @@ calculateSliceData item total =
 
 
 view : Size -> List Item -> (Item -> msg) -> Svg msg
-view viewPortSize items onclick =
+view viewPortSize items onClick =
     let
-        s =
-            size1 6
-
         cumulativeRadians =
             0
 
-        plots =
+        slices =
             items
-                |> List.map (\i -> Svg.text_ [] [ Svg.text i.name ])
+                -- |> List.map (\item -> Svg.text_ [] [ Svg.text i.name ])
+                |> List.map calculateSliceData
                 |> Svg.g []
     in
         Svg.svg
@@ -110,5 +95,5 @@ view viewPortSize items onclick =
             , viewBox "-1 -1 2 2"
             , style "transform: rotate(-90deg)"
             ]
-            [ plots
+            [ slices
             ]
