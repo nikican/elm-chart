@@ -19,14 +19,14 @@ type alias Size =
     }
 
 
-calculateSliceData : Item -> Svg msg
-calculateSliceData item =
+calculateSliceData : Float -> Item -> List (Svg msg) -> Svg msg
+calculateSliceData total item =
     let
         cumulativeRadians =
             0
 
         percent =
-            item.value / 100
+            item.value / total
 
         startX =
             cos (cumulativeRadians)
@@ -67,16 +67,6 @@ calculateSliceData item =
             ]
 
 
-
---
---        return path({
---          d,
---          style: {
---            fill: slice.score.color || ``, // set empty string to make iOS ignore fill
---          },
---        });
-
-
 view : Size -> List Item -> (Item -> msg) -> Svg msg
 view viewPortSize items onClick =
     let
@@ -85,8 +75,8 @@ view viewPortSize items onClick =
 
         slices =
             items
-                -- |> List.map (\item -> Svg.text_ [] [ Svg.text i.name ])
-                |> List.map calculateSliceData
+                |> List.map (\item -> Svg.text_ [] [ Svg.text item.name ])
+                -- |> List.map (calculateSliceData 100)
                 |> Svg.g []
     in
         Svg.svg
