@@ -19,7 +19,7 @@ type alias Size =
     }
 
 
-calculateSliceData : Float -> Item -> List (Svg msg) -> Svg msg
+calculateSliceData : Float -> Item -> Svg msg
 calculateSliceData total item =
     let
         cumulativeRadians =
@@ -65,6 +65,7 @@ calculateSliceData total item =
         Svg.path
             [ d pathD
             ]
+            []
 
 
 view : Size -> List Item -> (Item -> msg) -> Svg msg
@@ -74,10 +75,7 @@ view viewPortSize items onClick =
             0
 
         slices =
-            items
-                |> List.map (\item -> Svg.text_ [] [ Svg.text item.name ])
-                -- |> List.map (calculateSliceData 100)
-                |> Svg.g []
+            List.map (calculateSliceData 100) items
     in
         Svg.svg
             [ width "400px"
@@ -85,5 +83,4 @@ view viewPortSize items onClick =
             , viewBox "-1 -1 2 2"
             , style "transform: rotate(-90deg)"
             ]
-            [ slices
-            ]
+            slices
