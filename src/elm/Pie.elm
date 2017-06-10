@@ -3,13 +3,12 @@ module Pie exposing (..)
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
 import String exposing (join)
-import Color exposing (..)
 
 
 type alias Item =
     { name : String
     , value : Float
-    , color : Color
+    , color : String
     }
 
 
@@ -19,29 +18,32 @@ type alias Size =
     }
 
 
-calculateSliceData : Float -> Item -> Svg msg
-calculateSliceData total item =
+getCoordinates : Float -> ( Float, Float )
+getCoordinates radians =
     let
-        cumulativeRadians =
-            0
+        x =
+            cos (radians)
 
+        y =
+            sin (radians)
+    in
+        ( x, y )
+
+
+calculateSliceData : Float -> Item -> ( List (Svg msg), Float ) -> ( List (Svg msg), Float )
+calculateSliceData total item ( paths, radians ) =
+    let
         percent =
             item.value / total
 
-        startX =
-            cos (cumulativeRadians)
+        startCoordinates =
+            getCoordinates radians
 
-        startY =
-            sin (cumulativeRadians)
+        cumulativeRadians =
+            radians + 2 * pi * percent
 
-        cumulativeRadians2 =
-            2 * pi * percent
-
-        endX =
-            cos (cumulativeRadians2)
-
-        endY =
-            sin (cumulativeRadians2)
+        endCoordinates =
+            getCoordinates cumulativeRadians
 
         largeArcFlag =
             if percent > 0.5 then
@@ -52,34 +54,40 @@ calculateSliceData total item =
         pathD =
             String.join " "
                 [ "M"
-                , toString startX
-                , toString startY
+                , startCoordinates |> Tuple.first |> toString
+                , startCoordinates |> Tuple.second |> toString
                 , "A 1 1 0"
-                , toString largeArcFlag
+                , largeArcFlag |> toString
                 , "1"
-                , toString endX
-                , toString endY
+                , endCoordinates |> Tuple.first |> toString
+                , endCoordinates |> Tuple.second |> toString
                 , "L 0 0"
                 ]
     in
-        Svg.path
+        ( (Svg.path
             [ d pathD
+            , fill item.color
             ]
             []
+          )
+            :: paths
+        , cumulativeRadians
+        )
 
 
 view : Size -> List Item -> (Item -> msg) -> Svg msg
 view viewPortSize items onClick =
     let
-        cumulativeRadians =
-            0
+        total =
+            List.foldl (\item sum -> item.value + sum) 0 items
 
         slices =
-            List.map (calculateSliceData 100) items
+            List.foldl (calculateSliceData total) ( [], 0 ) items
+                |> Tuple.first
     in
         Svg.svg
-            [ width "400px"
-            , height "300px"
+            [ width <| toString viewPortSize.width
+            , height <| toString viewPortSize.height
             , viewBox "-1 -1 2 2"
             , style "transform: rotate(-90deg)"
             ]

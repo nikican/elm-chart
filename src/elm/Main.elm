@@ -73,22 +73,22 @@ staticSize =
 
 pieSize : Pie.Size
 pieSize =
-    { width = 800, height = 400 }
+    { width = 400, height = 400 }
 
 
 oneitem : Pie.Item
 oneitem =
     { name = "Technology"
-    , value = 40
-    , color = Color.blue
+    , value = 50
+    , color = "blue"
     }
 
 
 twoitem : Pie.Item
 twoitem =
     { name = "Oil"
-    , value = 60
-    , color = Color.red
+    , value = 50
+    , color = "red"
     }
 
 
