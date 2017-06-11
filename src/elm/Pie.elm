@@ -2,7 +2,6 @@ module Pie exposing (..)
 
 import Svg exposing (Svg)
 import Svg.Attributes exposing (..)
-import String exposing (join)
 
 
 type alias Item =
@@ -18,8 +17,8 @@ type alias Size =
     }
 
 
-getCoordinates : Float -> ( Float, Float )
-getCoordinates radians =
+calculateCoordinates : Float -> ( Float, Float )
+calculateCoordinates radians =
     let
         x =
             cos (radians)
@@ -30,6 +29,34 @@ getCoordinates radians =
         ( x, y )
 
 
+createSlicePath : ( Float, Float ) -> Float -> ( Float, Float ) -> String
+createSlicePath startCoordinates largeArcFlag endCoordinates =
+    String.join " "
+        [ "M"
+        , startCoordinates |> Tuple.first |> toString
+        , startCoordinates |> Tuple.second |> toString
+        , "A 1 1 0"
+        , largeArcFlag |> toString
+        , "1"
+        , endCoordinates |> Tuple.first |> toString
+        , endCoordinates |> Tuple.second |> toString
+        , "L 0 0"
+        ]
+
+
+accumulateRadians : Float -> Float -> Float
+accumulateRadians radians percent =
+    radians + 2 * pi * percent
+
+
+calculateLargeArcFlag : Float -> number
+calculateLargeArcFlag percent =
+    if percent > 0.5 then
+        1
+    else
+        0
+
+
 calculateSliceData : Float -> Item -> ( List (Svg msg), Float ) -> ( List (Svg msg), Float )
 calculateSliceData total item ( paths, radians ) =
     let
@@ -37,36 +64,24 @@ calculateSliceData total item ( paths, radians ) =
             item.value / total
 
         startCoordinates =
-            getCoordinates radians
+            calculateCoordinates radians
 
         cumulativeRadians =
-            radians + 2 * pi * percent
+            accumulateRadians radians percent
 
         endCoordinates =
-            getCoordinates cumulativeRadians
+            calculateCoordinates cumulativeRadians
 
         largeArcFlag =
-            if percent > 0.5 then
-                1
-            else
-                0
+            calculateLargeArcFlag percent
 
         pathD =
-            String.join " "
-                [ "M"
-                , startCoordinates |> Tuple.first |> toString
-                , startCoordinates |> Tuple.second |> toString
-                , "A 1 1 0"
-                , largeArcFlag |> toString
-                , "1"
-                , endCoordinates |> Tuple.first |> toString
-                , endCoordinates |> Tuple.second |> toString
-                , "L 0 0"
-                ]
+            createSlicePath startCoordinates largeArcFlag endCoordinates
     in
         ( (Svg.path
             [ d pathD
             , fill item.color
+            , title item.name
             ]
             []
           )
@@ -76,7 +91,7 @@ calculateSliceData total item ( paths, radians ) =
 
 
 view : Size -> List Item -> (Item -> msg) -> Svg msg
-view viewPortSize items onClick =
+view size items onClick =
     let
         total =
             List.foldl (\item sum -> item.value + sum) 0 items
@@ -86,8 +101,8 @@ view viewPortSize items onClick =
                 |> Tuple.first
     in
         Svg.svg
-            [ width <| toString viewPortSize.width
-            , height <| toString viewPortSize.height
+            [ width <| toString size.width
+            , height <| toString size.height
             , viewBox "-1 -1 2 2"
             , style "transform: rotate(-90deg)"
             ]

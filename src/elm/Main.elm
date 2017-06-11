@@ -92,9 +92,17 @@ twoitem =
     }
 
 
+threeitem : Pie.Item
+threeitem =
+    { name = "Fish"
+    , value = 17
+    , color = "yellow"
+    }
+
+
 view : Model -> Html Msg
 view model =
     div []
-        [ Pie.view pieSize [ oneitem, twoitem ] PieClick
+        [ Pie.view pieSize [ oneitem, twoitem, threeitem ] PieClick
         , Nash.plot staticSize model.values
         ]
