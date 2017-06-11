@@ -78,12 +78,16 @@ calculateSliceData total item ( paths, radians ) =
         pathD =
             createSlicePath startCoordinates largeArcFlag endCoordinates
     in
-        ( (Svg.path
-            [ d pathD
-            , fill item.color
-            , title item.name
+        ( (Svg.g []
+            [ Svg.title []
+                [ Svg.text item.name ]
+            , Svg.path
+                [ d pathD
+                , fill item.color
+                , title item.name
+                ]
+                []
             ]
-            []
           )
             :: paths
         , cumulativeRadians
